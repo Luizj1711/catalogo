@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Catálogo</title>
+<style>
+  :root{
+    --bg:#f6f4ef;
+    --paper:#ffffff;
+    --ink:#1d1b17;
+    --muted:#7a766c;
+    --line:#e7e2d8;
+    --accent:#2f4538;
+    --accent-soft:#e2e9e0;
+    --accent-ink:#f6f4ef;
+    --danger:#a3402f;
+    --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-bottom:96px;
+  }
+
+  /* ---------- Cabeçalho ---------- */
+  .topo{
+    position:sticky; top:0; z-index:20;
+    background:var(--bg);
+    padding:18px 16px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .topo h1{
+    margin:0 0 2px; font-size:22px; font-weight:700; letter-spacing:-0.01em;
+  }
+  .topo p{ margin:0 0 14px; font-size:13px; color:var(--muted); }
+
+  .busca{
+    display:flex; align-items:center; gap:8px;
+    background:var(--paper); border:1px solid var(--line);
+    border-radius:999px; padding:10px 14px;
+  }
+  .busca svg{ flex:0 0 auto; opacity:0.5; }
+  .busca input{
+    border:none; outline:none; background:transparent; font-size:15px;
+    width:100%; color:var(--ink);
+  }
+  .busca input::placeholder{ color:var(--muted); }
+
+  .categorias{
+    display:flex; gap:8px; overflow-x:auto; padding:12px 0 2px;
+    scrollbar-width:none;
+  }
+  .categorias::-webkit-scrollbar{ display:none; }
+  .chip-cat{
+    flex:0 0 auto; border:1px solid var(--line); background:var(--paper);
+    color:var(--ink); border-radius:999px; padding:8px 16px; font-size:13.5px;
+    cursor:pointer; white-space:nowrap;
+  }
+  .chip-cat.ativo{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600; }
+
+  /* ---------- Grade de produtos ---------- */
+  .grade{
+    display:grid; grid-template-columns:1fr 1fr; gap:12px;
+    padding:16px;
+    max-width:560px; margin:0 auto;
+  }
+  .cartao{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+  .cartao .imagem{
+    aspect-ratio:1/1; background:var(--accent-soft);
+    display:flex; align-items:center; justify-content:center;
+    font-size:34px; position:relative;
+  }
+  .cartao .imagem img{ width:100%; height:100%; object-fit:cover; }
+  .cartao .conteudo{ padding:10px 12px 12px; display:flex; flex-direction:column; gap:2px; flex:1; }
+  .cartao .categoria-label{ font-size:11px; color:var(--muted); }
+  .cartao .nome{ font-size:14px; font-weight:600; line-height:1.3; margin:0; }
+
+  .add-linha{ margin-top:8px; display:flex; align-items:center; justify-content:flex-end; min-height:32px; }
+  .btn-add{
+    width:32px; height:32px; border-radius:999px; border:1px solid var(--accent);
+    background:var(--paper); color:var(--accent); font-size:18px; line-height:1;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .stepper{
+    display:flex; align-items:center; gap:10px; background:var(--accent);
+    border-radius:999px; padding:4px 6px;
+  }
+  .stepper button{
+    width:24px; height:24px; border-radius:999px; border:none; background:var(--accent-ink);
+    color:var(--accent); font-size:15px; line-height:1; cursor:pointer;
+  }
+  .stepper .qtd{ color:var(--accent-ink); font-size:13.5px; font-weight:700; min-width:12px; text-align:center; }
+
+  .vazio{
+    grid-column:1/-1; text-align:center; color:var(--muted); font-size:14px; padding:40px 16px;
+  }
+
+  /* ---------- Barra flutuante do carrinho ---------- */
+  .barra-carrinho{
+    position:fixed; left:16px; right:16px; bottom:16px; z-index:30;
+    max-width:528px; margin:0 auto;
+    background:var(--accent); color:var(--accent-ink);
+    border-radius:999px; padding:6px 6px 6px 20px;
+    display:none; align-items:center; justify-content:space-between;
+    box-shadow:0 8px 24px rgba(0,0,0,0.18);
+  }
+  .barra-carrinho.mostrar{ display:flex; }
+  .barra-carrinho .txt{ font-size:14px; font-weight:600; }
+  .barra-carrinho button{
+    background:var(--accent-ink); color:var(--accent); border:none;
+    border-radius:999px; padding:12px 18px; font-size:14px; font-weight:700; cursor:pointer;
+  }
+
+  /* ---------- Painel do pedido ---------- */
+  .fundo-painel{
+    position:fixed; inset:0; background:rgba(20,18,14,0.4); z-index:40;
+    display:none;
+  }
+  .fundo-painel.mostrar{ display:block; }
+  .painel{
+    position:fixed; left:0; right:0; bottom:0; z-index:41;
+    background:var(--paper); border-radius:20px 20px 0 0;
+    max-height:80vh; overflow-y:auto;
+    transform:translateY(100%); transition:transform 0.25s ease;
+    padding:18px 16px 20px;
+  }
+  .painel.mostrar{ transform:translateY(0); }
+  .painel-topo{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .painel-topo h2{ font-size:17px; margin:0; }
+  .fechar-painel{ border:none; background:var(--accent-soft); color:var(--ink); width:30px; height:30px; border-radius:999px; font-size:16px; cursor:pointer; }
+
+  .linha-pedido{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 0; border-bottom:1px solid var(--line); gap:10px;
+  }
+  .linha-pedido .nome-item{ font-size:14px; }
+  .linha-pedido .nome-item small{ display:block; color:var(--muted); font-size:12px; margin-top:1px; }
+
+  .obs{
+    width:100%; margin-top:14px; border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; font-size:14px; font-family:inherit; resize:none; min-height:60px;
+    color:var(--ink);
+  }
+  .obs::placeholder{ color:var(--muted); }
+
+  .btn-whats{
+    display:block; width:100%; text-align:center; text-decoration:none;
+    background:var(--accent); color:var(--accent-ink); font-size:15px; font-weight:700;
+    padding:15px; border-radius:12px; border:none; cursor:pointer; margin-top:16px;
+  }
+  .nota-preco{ font-size:12.5px; color:var(--muted); text-align:center; margin-top:10px; }
+</style>
+</head>
+<body>
+
+<div class="topo">
+  <h1>Nome da Loja</h1>
+  <p>Escolha os itens — o valor é combinado no WhatsApp</p>
+  <div class="busca">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="campoBusca" type="text" placeholder="Buscar produto...">
+  </div>
+  <div class="categorias" id="listaCategorias"></div>
+</div>
+
+<div class="grade" id="grade"></div>
+
+<div class="barra-carrinho" id="barraCarrinho">
+  <span class="txt" id="textoBarra">0 itens selecionados</span>
+  <button id="abrirPainel">Ver pedido</button>
+</div>
+
+<div class="fundo-painel" id="fundoPainel"></div>
+<div class="painel" id="painel">
+  <div class="painel-topo">
+    <h2>Seu pedido</h2>
+    <button class="fechar-painel" id="fecharPainel">✕</button>
+  </div>
+  <div id="listaPainel"></div>
+  <textarea class="obs" id="observacao" placeholder="Alguma observação? (opcional) Ex: prefiro retirar, entregar até sexta..."></textarea>
+  <button class="btn-whats" id="btnWhats">Pedir orçamento no WhatsApp</button>
+  <p class="nota-preco">Sem preços aqui — te respondo com valores certinhos pelo WhatsApp.</p>
+</div>
+
+<script>
+/* =======================================================
+   1) SEU NÚMERO DE WHATSAPP
+======================================================= */
+const NUMERO_WHATSAPP = "5511996991711";
+
+/* =======================================================
+   2) SEUS PRODUTOS
+   - "categoria" define os filtros que aparecem no topo.
+   - "imagem" é opcional: link de uma foto. Sem link, mostra um ícone.
+   - Preço não entra aqui de propósito — combinam no WhatsApp.
+======================================================= */
+const PRODUTOS = [
+  { nome: "Camiseta oversized preta", categoria: "Camisetas", imagem: "", icone: "👕" },
+  { nome: "Camiseta oversized branca", categoria: "Camisetas", imagem: "", icone: "👕" },
+  { nome: "Camiseta listrada", categoria: "Camisetas", imagem: "", icone: "👕" },
+  { nome: "Boné trucker preto", categoria: "Bonés", imagem: "", icone: "🧢" },
+  { nome: "Boné trucker bege", categoria: "Bonés", imagem: "", icone: "🧢" },
+  { nome: "Boné aba reta", categoria: "Bonés", imagem: "", icone: "🧢" },
+  { nome: "Boné street verde", categoria: "Bonés", imagem: "", icone: "🧢" },
+  { nome: "Moletom básico cinza", categoria: "Moletons", imagem: "", icone: "🧥" }
+];
+
+/* ======================= CÓDIGO ======================= */
+
+const estado = PRODUTOS.map(() => ({ qtd: 0 }));
+let categoriaAtiva = "Tudo";
+let termoBusca = "";
+
+const grade = document.getElementById("grade");
+const listaCategorias = document.getElementById("listaCategorias");
+const barraCarrinho = document.getElementById("barraCarrinho");
+const textoBarra = document.getElementById("textoBarra");
+const painel = document.getElementById("painel");
+const fundoPainel = document.getElementById("fundoPainel");
+const listaPainel = document.getElementById("listaPainel");
+
+const categorias = ["Tudo", ...Array.from(new Set(PRODUTOS.map(p => p.categoria)))];
+
+categorias.forEach(cat => {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.className = "chip-cat" + (cat === categoriaAtiva ? " ativo" : "");
+  chip.textContent = cat;
+  chip.addEventListener("click", () => {
+    categoriaAtiva = cat;
+    listaCategorias.querySelectorAll(".chip-cat").forEach(c => c.classList.remove("ativo"));
+    chip.classList.add("ativo");
+    renderizarGrade();
+  });
+  listaCategorias.appendChild(chip);
+});
+
+function produtosFiltrados(){
+  return PRODUTOS
+    .map((p, i) => ({ ...p, i }))
+    .filter(p => categoriaAtiva === "Tudo" || p.categoria === categoriaAtiva)
+    .filter(p => p.nome.toLowerCase().includes(termoBusca.toLowerCase()));
+}
+
+function renderizarGrade(){
+  const itens = produtosFiltrados();
+  grade.innerHTML = "";
+
+  if (itens.length === 0){
+    grade.innerHTML = '<div class="vazio">Nenhum produto encontrado.</div>';
+    return;
+  }
+
+  itens.forEach(p => {
+    const cartao = document.createElement("div");
+    cartao.className = "cartao";
+
+    const imagemHtml = p.imagem
+      ? `<img src="${p.imagem}" alt="${p.nome}">`
+      : p.icone;
+
+    cartao.innerHTML = `
+      <div class="imagem">${imagemHtml}</div>
+      <div class="conteudo">
+        <span class="categoria-label">${p.categoria}</span>
+        <p class="nome">${p.nome}</p>
+        <div class="add-linha" data-i="${p.i}"></div>
+      </div>
+    `;
+    grade.appendChild(cartao);
+    renderizarAddLinha(p.i);
+  });
+}
+
+function renderizarAddLinha(i){
+  const container = grade.querySelector(`.add-linha[data-i="${i}"]`);
+  if (!container) return;
+  const qtd = estado[i].qtd;
+
+  if (qtd === 0){
+    container.innerHTML = `<button type="button" class="btn-add">+</button>`;
+    container.querySelector(".btn-add").addEventListener("click", () => {
+      estado[i].qtd = 1;
+      renderizarAddLinha(i);
+      atualizarBarra();
+    });
+  } else {
+    container.innerHTML = `
+      <div class="stepper">
+        <button type="button" class="menos">−</button>
+        <span class="qtd">${qtd}</span>
+        <button type="button" class="mais">+</button>
+      </div>
+    `;
+    container.querySelector(".menos").addEventListener("click", () => {
+      estado[i].qtd = Math.max(0, estado[i].qtd - 1);
+      renderizarAddLinha(i);
+      atualizarBarra();
+    });
+    container.querySelector(".mais").addEventListener("click", () => {
+      estado[i].qtd++;
+      renderizarAddLinha(i);
+      atualizarBarra();
+    });
+  }
+}
+
+function totalItens(){
+  return estado.reduce((soma, e) => soma + e.qtd, 0);
+}
+
+function atualizarBarra(){
+  const total = totalItens();
+  if (total > 0){
+    barraCarrinho.classList.add("mostrar");
+    textoBarra.textContent = total === 1 ? "1 item selecionado" : `${total} itens selecionados`;
+  } else {
+    barraCarrinho.classList.remove("mostrar");
+    fecharPainelFn();
+  }
+}
+
+function renderizarPainel(){
+  listaPainel.innerHTML = "";
+  PRODUTOS.forEach((p, i) => {
+    if (estado[i].qtd === 0) return;
+    const linha = document.createElement("div");
+    linha.className = "linha-pedido";
+    linha.innerHTML = `
+      <span class="nome-item">${p.nome}<small>${p.categoria}</small></span>
+      <div class="stepper" style="background:var(--accent)">
+        <button type="button" class="menos">−</button>
+        <span class="qtd">${estado[i].qtd}</span>
+        <button type="button" class="mais">+</button>
+      </div>
+    `;
+    linha.querySelector(".menos").addEventListener("click", () => {
+      estado[i].qtd = Math.max(0, estado[i].qtd - 1);
+      renderizarPainel();
+      renderizarAddLinha(i);
+      atualizarBarra();
+    });
+    linha.querySelector(".mais").addEventListener("click", () => {
+      estado[i].qtd++;
+      renderizarPainel();
+      renderizarAddLinha(i);
+      atualizarBarra();
+    });
+    listaPainel.appendChild(linha);
+  });
+}
+
+function abrirPainelFn(){
+  renderizarPainel();
+  painel.classList.add("mostrar");
+  fundoPainel.classList.add("mostrar");
+}
+function fecharPainelFn(){
+  painel.classList.remove("mostrar");
+  fundoPainel.classList.remove("mostrar");
+}
+
+document.getElementById("abrirPainel").addEventListener("click", abrirPainelFn);
+document.getElementById("fecharPainel").addEventListener("click", fecharPainelFn);
+fundoPainel.addEventListener("click", fecharPainelFn);
+
+document.getElementById("campoBusca").addEventListener("input", (e) => {
+  termoBusca = e.target.value;
+  renderizarGrade();
+});
+
+document.getElementById("btnWhats").addEventListener("click", () => {
+  const linhas = [];
+  PRODUTOS.forEach((p, i) => {
+    if (estado[i].qtd > 0) linhas.push(`• ${estado[i].qtd}x ${p.nome}`);
+  });
+  if (linhas.length === 0) return;
+
+  const observacao = document.getElementById("observacao").value.trim();
+
+  let mensagem = "Olá! Gostaria de um orçamento para:\n" + linhas.join("\n");
+  if (observacao) mensagem += "\n\nObservação: " + observacao;
+  mensagem += "\n\nPode me passar os valores e a forma de entrega?";
+
+  const link = "https://wa.me/" + NUMERO_WHATSAPP + "?text=" + encodeURIComponent(mensagem);
+  window.location.href = link;
+});
+
+renderizarGrade();
+</script>
+
+</body>
+</html>
