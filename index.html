@@ -6,15 +6,15 @@
 <title>Catálogo</title>
 <style>
   :root{
-    --bg:#f6f4ef;
+    --bg:#f3f7fc;
     --paper:#ffffff;
-    --ink:#1d1b17;
-    --muted:#7a766c;
-    --line:#e7e2d8;
-    --accent:#2f4538;
-    --accent-soft:#e2e9e0;
-    --accent-ink:#f6f4ef;
-    --danger:#a3402f;
+    --ink:#12243a;
+    --muted:#5c6f82;
+    --line:#dbe6f2;
+    --accent:#1c3f66;
+    --accent-2:#2f6fed;
+    --accent-soft:#e3edfa;
+    --accent-ink:#ffffff;
     --radius:14px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
@@ -29,11 +29,11 @@
   .topo{
     position:sticky; top:0; z-index:20;
     background:var(--bg);
-    padding:18px 16px 10px;
+    padding:18px 16px 12px;
     border-bottom:1px solid var(--line);
   }
   .topo h1{
-    margin:0 0 2px; font-size:22px; font-weight:700; letter-spacing:-0.01em;
+    margin:0 0 2px; font-size:22px; font-weight:700; letter-spacing:-0.01em; color:var(--accent);
   }
   .topo p{ margin:0 0 14px; font-size:13px; color:var(--muted); }
 
@@ -42,22 +42,35 @@
     background:var(--paper); border:1px solid var(--line);
     border-radius:999px; padding:10px 14px;
   }
-  .busca svg{ flex:0 0 auto; opacity:0.5; }
+  .busca svg{ flex:0 0 auto; opacity:0.5; color:var(--accent); }
   .busca input{
     border:none; outline:none; background:transparent; font-size:15px;
     width:100%; color:var(--ink);
   }
   .busca input::placeholder{ color:var(--muted); }
 
-  .categorias{
-    display:flex; gap:8px; overflow-x:auto; padding:12px 0 2px;
-    scrollbar-width:none;
+  /* ---------- Caixinha de categorias ---------- */
+  .caixa-categorias{ margin-top:10px; position:relative; }
+  .botao-categorias{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    background:var(--paper); border:1px solid var(--line); border-radius:12px;
+    padding:11px 14px; font-size:14px; color:var(--ink); cursor:pointer;
   }
-  .categorias::-webkit-scrollbar{ display:none; }
+  .botao-categorias .rotulo{ display:flex; align-items:center; gap:8px; }
+  .botao-categorias .rotulo b{ color:var(--accent); font-weight:600; }
+  .botao-categorias .seta{ transition:transform 0.2s ease; color:var(--muted); }
+  .botao-categorias.aberto .seta{ transform:rotate(180deg); }
+
+  .painel-categorias{
+    display:none; flex-wrap:wrap; gap:8px;
+    background:var(--paper); border:1px solid var(--line); border-radius:12px;
+    padding:12px; margin-top:6px;
+  }
+  .painel-categorias.aberto{ display:flex; }
   .chip-cat{
-    flex:0 0 auto; border:1px solid var(--line); background:var(--paper);
-    color:var(--ink); border-radius:999px; padding:8px 16px; font-size:13.5px;
-    cursor:pointer; white-space:nowrap;
+    border:1px solid var(--line); background:var(--bg);
+    color:var(--ink); border-radius:999px; padding:8px 15px; font-size:13.5px;
+    cursor:pointer;
   }
   .chip-cat.ativo{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600; }
 
@@ -69,7 +82,7 @@
   }
   .cartao{
     background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
-    overflow:hidden; display:flex; flex-direction:column;
+    overflow:hidden; display:flex; flex-direction:column; cursor:pointer;
   }
   .cartao .imagem{
     aspect-ratio:1/1; background:var(--accent-soft);
@@ -78,7 +91,7 @@
   }
   .cartao .imagem img{ width:100%; height:100%; object-fit:cover; }
   .cartao .conteudo{ padding:10px 12px 12px; display:flex; flex-direction:column; gap:2px; flex:1; }
-  .cartao .categoria-label{ font-size:11px; color:var(--muted); }
+  .cartao .categoria-label{ font-size:11px; color:var(--accent-2); font-weight:600; }
   .cartao .nome{ font-size:14px; font-weight:600; line-height:1.3; margin:0; }
 
   .add-linha{ margin-top:8px; display:flex; align-items:center; justify-content:flex-end; min-height:32px; }
@@ -108,7 +121,7 @@
     background:var(--accent); color:var(--accent-ink);
     border-radius:999px; padding:6px 6px 6px 20px;
     display:none; align-items:center; justify-content:space-between;
-    box-shadow:0 8px 24px rgba(0,0,0,0.18);
+    box-shadow:0 8px 24px rgba(18,36,58,0.22);
   }
   .barra-carrinho.mostrar{ display:flex; }
   .barra-carrinho .txt{ font-size:14px; font-weight:600; }
@@ -117,24 +130,25 @@
     border-radius:999px; padding:12px 18px; font-size:14px; font-weight:700; cursor:pointer;
   }
 
-  /* ---------- Painel do pedido ---------- */
+  /* ---------- Fundo comum dos painéis ---------- */
   .fundo-painel{
-    position:fixed; inset:0; background:rgba(20,18,14,0.4); z-index:40;
+    position:fixed; inset:0; background:rgba(12,24,40,0.45); z-index:40;
     display:none;
   }
   .fundo-painel.mostrar{ display:block; }
   .painel{
     position:fixed; left:0; right:0; bottom:0; z-index:41;
     background:var(--paper); border-radius:20px 20px 0 0;
-    max-height:80vh; overflow-y:auto;
+    max-height:85vh; overflow-y:auto;
     transform:translateY(100%); transition:transform 0.25s ease;
     padding:18px 16px 20px;
   }
   .painel.mostrar{ transform:translateY(0); }
   .painel-topo{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
-  .painel-topo h2{ font-size:17px; margin:0; }
-  .fechar-painel{ border:none; background:var(--accent-soft); color:var(--ink); width:30px; height:30px; border-radius:999px; font-size:16px; cursor:pointer; }
+  .painel-topo h2{ font-size:17px; margin:0; color:var(--accent); }
+  .fechar-painel{ border:none; background:var(--accent-soft); color:var(--accent); width:30px; height:30px; border-radius:999px; font-size:16px; cursor:pointer; flex:0 0 auto; }
 
+  /* ---------- Painel do pedido ---------- */
   .linha-pedido{
     display:flex; justify-content:space-between; align-items:center;
     padding:10px 0; border-bottom:1px solid var(--line); gap:10px;
@@ -155,6 +169,30 @@
     padding:15px; border-radius:12px; border:none; cursor:pointer; margin-top:16px;
   }
   .nota-preco{ font-size:12.5px; color:var(--muted); text-align:center; margin-top:10px; }
+
+  /* ---------- Painel de detalhe do produto ---------- */
+  .galeria{
+    display:flex; overflow-x:auto; gap:10px; scroll-snap-type:x mandatory;
+    border-radius:12px; margin-bottom:4px;
+  }
+  .galeria::-webkit-scrollbar{ display:none; }
+  .galeria .slide{
+    flex:0 0 100%; scroll-snap-align:start; aspect-ratio:1/1;
+    background:var(--accent-soft); border-radius:12px;
+    display:flex; align-items:center; justify-content:center; font-size:54px;
+    overflow:hidden;
+  }
+  .galeria .slide img{ width:100%; height:100%; object-fit:cover; }
+  .pontos{ display:flex; justify-content:center; gap:6px; margin:8px 0 4px; }
+  .pontos span{ width:6px; height:6px; border-radius:999px; background:var(--line); }
+  .pontos span.ativo{ background:var(--accent); }
+
+  .detalhe-categoria{ font-size:12px; color:var(--accent-2); font-weight:600; margin-top:10px; }
+  .detalhe-nome{ font-size:18px; font-weight:700; margin:2px 0 8px; }
+  .detalhe-desc{ font-size:14px; color:var(--muted); line-height:1.55; margin:0; }
+
+  .detalhe-add{ display:flex; align-items:center; justify-content:space-between; margin-top:18px; }
+  .detalhe-add .rotulo{ font-size:13.5px; color:var(--muted); }
 </style>
 </head>
 <body>
@@ -166,26 +204,42 @@
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input id="campoBusca" type="text" placeholder="Buscar produto...">
   </div>
-  <div class="categorias" id="listaCategorias"></div>
+
+  <div class="caixa-categorias">
+    <button type="button" class="botao-categorias" id="botaoCategorias">
+      <span class="rotulo">Categoria: <b id="categoriaAtualTexto">Tudo</b></span>
+      <span class="seta">▾</span>
+    </button>
+    <div class="painel-categorias" id="painelCategorias"></div>
+  </div>
 </div>
 
 <div class="grade" id="grade"></div>
 
 <div class="barra-carrinho" id="barraCarrinho">
   <span class="txt" id="textoBarra">0 itens selecionados</span>
-  <button id="abrirPainel">Ver pedido</button>
+  <button id="abrirPainelPedido">Ver pedido</button>
 </div>
 
 <div class="fundo-painel" id="fundoPainel"></div>
-<div class="painel" id="painel">
+
+<div class="painel" id="painelPedido">
   <div class="painel-topo">
     <h2>Seu pedido</h2>
-    <button class="fechar-painel" id="fecharPainel">✕</button>
+    <button class="fechar-painel" id="fecharPainelPedido">✕</button>
   </div>
   <div id="listaPainel"></div>
   <textarea class="obs" id="observacao" placeholder="Alguma observação? (opcional) Ex: prefiro retirar, entregar até sexta..."></textarea>
   <button class="btn-whats" id="btnWhats">Pedir orçamento no WhatsApp</button>
   <p class="nota-preco">Sem preços aqui — te respondo com valores certinhos pelo WhatsApp.</p>
+</div>
+
+<div class="painel" id="painelDetalhe">
+  <div class="painel-topo">
+    <h2>Detalhes</h2>
+    <button class="fechar-painel" id="fecharPainelDetalhe">✕</button>
+  </div>
+  <div id="conteudoDetalhe"></div>
 </div>
 
 <script>
@@ -196,19 +250,69 @@ const NUMERO_WHATSAPP = "5511996991711";
 
 /* =======================================================
    2) SEUS PRODUTOS
-   - "categoria" define os filtros que aparecem no topo.
-   - "imagem" é opcional: link de uma foto. Sem link, mostra um ícone.
-   - Preço não entra aqui de propósito — combinam no WhatsApp.
+   - "categoria" gera os filtros sozinho.
+   - "imagens": lista de links de foto. Pode ter mais de uma.
+     Sem link, mostra o ícone em todos os slides.
+   - "descricao": texto curto que aparece ao abrir o produto.
+   - Sem preço aqui de propósito — combinam no WhatsApp.
 ======================================================= */
 const PRODUTOS = [
-  { nome: "Camiseta oversized preta", categoria: "Camisetas", imagem: "", icone: "👕" },
-  { nome: "Camiseta oversized branca", categoria: "Camisetas", imagem: "", icone: "👕" },
-  { nome: "Camiseta listrada", categoria: "Camisetas", imagem: "", icone: "👕" },
-  { nome: "Boné trucker preto", categoria: "Bonés", imagem: "", icone: "🧢" },
-  { nome: "Boné trucker bege", categoria: "Bonés", imagem: "", icone: "🧢" },
-  { nome: "Boné aba reta", categoria: "Bonés", imagem: "", icone: "🧢" },
-  { nome: "Boné street verde", categoria: "Bonés", imagem: "", icone: "🧢" },
-  { nome: "Moletom básico cinza", categoria: "Moletons", imagem: "", icone: "🧥" }
+  {
+    nome: "Camiseta oversized preta",
+    categoria: "Camisetas",
+    icone: "👕",
+    imagens: [],
+    descricao: "Camiseta 100% algodão, corte oversized, tingimento artesanal peça a peça — cada uma sai levemente diferente da outra."
+  },
+  {
+    nome: "Camiseta oversized branca",
+    categoria: "Camisetas",
+    icone: "👕",
+    imagens: [],
+    descricao: "Mesmo corte oversized da preta, em tecido mais leve. Boa pra usar por cima ou sozinha."
+  },
+  {
+    nome: "Camiseta listrada",
+    categoria: "Camisetas",
+    icone: "👕",
+    imagens: [],
+    descricao: "Listras finas, malha canelada, caimento reto. Vem em tamanho único, estilo boxy."
+  },
+  {
+    nome: "Boné trucker preto",
+    categoria: "Bonés",
+    icone: "🧢",
+    imagens: [],
+    descricao: "Tela respirável atrás, aba curva, fecho de encaixe ajustável. Serve na maioria das cabeças."
+  },
+  {
+    nome: "Boné trucker bege",
+    categoria: "Bonés",
+    icone: "🧢",
+    imagens: [],
+    descricao: "Mesmo modelo do preto, em bege. Combina bem com peças mais claras."
+  },
+  {
+    nome: "Boné aba reta",
+    categoria: "Bonés",
+    icone: "🧢",
+    imagens: [],
+    descricao: "Aba reta, estrutura mais firme, visual streetwear. Ajuste por fivela na parte de trás."
+  },
+  {
+    nome: "Boné street verde",
+    categoria: "Bonés",
+    icone: "🧢",
+    imagens: [],
+    descricao: "Verde musgo, bordado discreto na frente. Aba curva, tecido leve."
+  },
+  {
+    nome: "Moletom básico cinza",
+    categoria: "Moletons",
+    icone: "🧥",
+    imagens: [],
+    descricao: "Moletom canguru, fleece por dentro, punho e barra ribana. Corte confortável, não é justo."
+  }
 ];
 
 /* ======================= CÓDIGO ======================= */
@@ -216,14 +320,22 @@ const PRODUTOS = [
 const estado = PRODUTOS.map(() => ({ qtd: 0 }));
 let categoriaAtiva = "Tudo";
 let termoBusca = "";
+let indiceDetalheAberto = null;
+let slideAtual = 0;
 
 const grade = document.getElementById("grade");
-const listaCategorias = document.getElementById("listaCategorias");
+const painelCategorias = document.getElementById("painelCategorias");
+const botaoCategorias = document.getElementById("botaoCategorias");
+const categoriaAtualTexto = document.getElementById("categoriaAtualTexto");
 const barraCarrinho = document.getElementById("barraCarrinho");
 const textoBarra = document.getElementById("textoBarra");
-const painel = document.getElementById("painel");
 const fundoPainel = document.getElementById("fundoPainel");
+
+const painelPedido = document.getElementById("painelPedido");
 const listaPainel = document.getElementById("listaPainel");
+
+const painelDetalhe = document.getElementById("painelDetalhe");
+const conteudoDetalhe = document.getElementById("conteudoDetalhe");
 
 const categorias = ["Tudo", ...Array.from(new Set(PRODUTOS.map(p => p.categoria)))];
 
@@ -234,11 +346,26 @@ categorias.forEach(cat => {
   chip.textContent = cat;
   chip.addEventListener("click", () => {
     categoriaAtiva = cat;
-    listaCategorias.querySelectorAll(".chip-cat").forEach(c => c.classList.remove("ativo"));
+    categoriaAtualTexto.textContent = cat;
+    painelCategorias.querySelectorAll(".chip-cat").forEach(c => c.classList.remove("ativo"));
     chip.classList.add("ativo");
+    fecharCategorias();
     renderizarGrade();
   });
-  listaCategorias.appendChild(chip);
+  painelCategorias.appendChild(chip);
+});
+
+function abrirCategorias(){
+  painelCategorias.classList.add("aberto");
+  botaoCategorias.classList.add("aberto");
+}
+function fecharCategorias(){
+  painelCategorias.classList.remove("aberto");
+  botaoCategorias.classList.remove("aberto");
+}
+botaoCategorias.addEventListener("click", () => {
+  if (painelCategorias.classList.contains("aberto")) fecharCategorias();
+  else abrirCategorias();
 });
 
 function produtosFiltrados(){
@@ -261,8 +388,8 @@ function renderizarGrade(){
     const cartao = document.createElement("div");
     cartao.className = "cartao";
 
-    const imagemHtml = p.imagem
-      ? `<img src="${p.imagem}" alt="${p.nome}">`
+    const imagemHtml = (p.imagens && p.imagens[0])
+      ? `<img src="${p.imagens[0]}" alt="${p.nome}">`
       : p.icone;
 
     cartao.innerHTML = `
@@ -273,19 +400,24 @@ function renderizarGrade(){
         <div class="add-linha" data-i="${p.i}"></div>
       </div>
     `;
+    cartao.addEventListener("click", (ev) => {
+      if (ev.target.closest(".add-linha")) return;
+      abrirDetalhe(p.i);
+    });
     grade.appendChild(cartao);
     renderizarAddLinha(p.i);
   });
 }
 
 function renderizarAddLinha(i){
-  const container = grade.querySelector(`.add-linha[data-i="${i}"]`);
+  const container = document.querySelector(`.add-linha[data-i="${i}"]`);
   if (!container) return;
   const qtd = estado[i].qtd;
 
   if (qtd === 0){
     container.innerHTML = `<button type="button" class="btn-add">+</button>`;
-    container.querySelector(".btn-add").addEventListener("click", () => {
+    container.querySelector(".btn-add").addEventListener("click", (ev) => {
+      ev.stopPropagation();
       estado[i].qtd = 1;
       renderizarAddLinha(i);
       atualizarBarra();
@@ -298,12 +430,14 @@ function renderizarAddLinha(i){
         <button type="button" class="mais">+</button>
       </div>
     `;
-    container.querySelector(".menos").addEventListener("click", () => {
+    container.querySelector(".menos").addEventListener("click", (ev) => {
+      ev.stopPropagation();
       estado[i].qtd = Math.max(0, estado[i].qtd - 1);
       renderizarAddLinha(i);
       atualizarBarra();
     });
-    container.querySelector(".mais").addEventListener("click", () => {
+    container.querySelector(".mais").addEventListener("click", (ev) => {
+      ev.stopPropagation();
       estado[i].qtd++;
       renderizarAddLinha(i);
       atualizarBarra();
@@ -322,11 +456,14 @@ function atualizarBarra(){
     textoBarra.textContent = total === 1 ? "1 item selecionado" : `${total} itens selecionados`;
   } else {
     barraCarrinho.classList.remove("mostrar");
-    fecharPainelFn();
+    fecharTodosPaineis();
   }
+  if (indiceDetalheAberto !== null) atualizarStepperDetalhe();
 }
 
-function renderizarPainel(){
+/* ---------- Painel do pedido ---------- */
+
+function renderizarPainelPedido(){
   listaPainel.innerHTML = "";
   PRODUTOS.forEach((p, i) => {
     if (estado[i].qtd === 0) return;
@@ -342,13 +479,13 @@ function renderizarPainel(){
     `;
     linha.querySelector(".menos").addEventListener("click", () => {
       estado[i].qtd = Math.max(0, estado[i].qtd - 1);
-      renderizarPainel();
+      renderizarPainelPedido();
       renderizarAddLinha(i);
       atualizarBarra();
     });
     linha.querySelector(".mais").addEventListener("click", () => {
       estado[i].qtd++;
-      renderizarPainel();
+      renderizarPainelPedido();
       renderizarAddLinha(i);
       atualizarBarra();
     });
@@ -356,24 +493,80 @@ function renderizarPainel(){
   });
 }
 
-function abrirPainelFn(){
-  renderizarPainel();
-  painel.classList.add("mostrar");
+function abrirPainelPedidoFn(){
+  renderizarPainelPedido();
+  painelPedido.classList.add("mostrar");
   fundoPainel.classList.add("mostrar");
 }
-function fecharPainelFn(){
-  painel.classList.remove("mostrar");
+
+document.getElementById("abrirPainelPedido").addEventListener("click", abrirPainelPedidoFn);
+document.getElementById("fecharPainelPedido").addEventListener("click", fecharTodosPaineis);
+fundoPainel.addEventListener("click", fecharTodosPaineis);
+
+function fecharTodosPaineis(){
+  painelPedido.classList.remove("mostrar");
+  painelDetalhe.classList.remove("mostrar");
   fundoPainel.classList.remove("mostrar");
+  indiceDetalheAberto = null;
 }
 
-document.getElementById("abrirPainel").addEventListener("click", abrirPainelFn);
-document.getElementById("fecharPainel").addEventListener("click", fecharPainelFn);
-fundoPainel.addEventListener("click", fecharPainelFn);
+/* ---------- Painel de detalhe do produto ---------- */
+
+function abrirDetalhe(i){
+  indiceDetalheAberto = i;
+  slideAtual = 0;
+  const p = PRODUTOS[i];
+
+  const imagens = (p.imagens && p.imagens.length) ? p.imagens : [null];
+  const slidesHtml = imagens.map(url =>
+    `<div class="slide">${url ? `<img src="${url}" alt="${p.nome}">` : p.icone}</div>`
+  ).join("");
+  const pontosHtml = imagens.length > 1
+    ? `<div class="pontos">${imagens.map((_, idx) => `<span class="${idx === 0 ? 'ativo' : ''}"></span>`).join("")}</div>`
+    : "";
+
+  conteudoDetalhe.innerHTML = `
+    <div class="galeria" id="galeriaDetalhe">${slidesHtml}</div>
+    ${pontosHtml}
+    <div class="detalhe-categoria">${p.categoria}</div>
+    <h3 class="detalhe-nome">${p.nome}</h3>
+    <p class="detalhe-desc">${p.descricao || ""}</p>
+    <div class="detalhe-add">
+      <span class="rotulo">Quantidade</span>
+      <div class="add-linha" data-i="${i}" data-contexto="detalhe" style="min-height:auto"></div>
+    </div>
+  `;
+
+  renderizarAddLinha(i);
+
+  const galeria = document.getElementById("galeriaDetalhe");
+  if (imagens.length > 1){
+    galeria.addEventListener("scroll", () => {
+      const idx = Math.round(galeria.scrollLeft / galeria.clientWidth);
+      conteudoDetalhe.querySelectorAll(".pontos span").forEach((s, si) => {
+        s.classList.toggle("ativo", si === idx);
+      });
+    });
+  }
+
+  painelDetalhe.classList.add("mostrar");
+  fundoPainel.classList.add("mostrar");
+}
+
+function atualizarStepperDetalhe(){
+  if (indiceDetalheAberto !== null) renderizarAddLinha(indiceDetalheAberto);
+}
+
+document.getElementById("fecharPainelDetalhe").addEventListener("click", fecharTodosPaineis);
+
+/* ---------- Busca ---------- */
 
 document.getElementById("campoBusca").addEventListener("input", (e) => {
   termoBusca = e.target.value;
   renderizarGrade();
 });
+
+/* ---------- Envio pro WhatsApp ---------- */
 
 document.getElementById("btnWhats").addEventListener("click", () => {
   const linhas = [];
